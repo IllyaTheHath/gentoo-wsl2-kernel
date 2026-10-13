@@ -1,0 +1,32 @@
+# Editor and OS-generated files
+*~
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
+
+# Patch conflicts and local source backups
+*.orig
+*.rej
+*.bak
+*.backup
+*.before-*
+
+# Kconfig-generated backups (keep configs/*.config tracked)
+.config.old
+.config.*.old
+
+# Build artifacts, if a build directory is created in this repository
+build/
+out/
+dist/
+bzImage
+vmlinux
+vmlinux.*
+System.map
+*.o
+*.ko
+*.cmd
+
+# Do NOT ignore *.config or *.patch: those are the repository's key artifacts.
