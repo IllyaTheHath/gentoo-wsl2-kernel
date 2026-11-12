@@ -4,7 +4,9 @@
 
 为 **Gentoo on WSL2** 维护的精简 Linux 内核配置及补丁集合。仓库不包含完整内核源码或预编译内核；使用 Gentoo 的 `sys-kernel/gentoo-sources` 获取源码，再应用这里维护的配置和补丁。
 
-当前已验证版本：**gentoo-sources 7.2.10（x86_64）**。
+当前已验证版本：
+- **gentoo-sources 7.2.10（x86_64）**
+- **gentoo-sources 7.3.4（x86_64）**
 
 ## 设计目标
 
@@ -23,9 +25,12 @@
 ├── README.md
 ├── LICENSE
 ├── configs/
-│   └── gentoo-7.2.10.config
+│   ├── gentoo-7.2.10.config
+│   └── gentoo-7.3.4.config
 └── patches/
-    └── gentoo-sources-7.2.10/
+    ├── gentoo-sources-7.2.10/
+    │   └── 0001-wsl-hv-pci-swiotlb.patch
+    └── gentoo-sources-7.3.4/
         └── 0001-wsl-hv-pci-swiotlb.patch
 ```
 
@@ -41,17 +46,19 @@
 
 ```bash
 REPO="$HOME/.config/kernel"
-# 首次使用时：git clone <你的仓库地址> "$REPO"
+# 首次使用时：git clone https://github.com/IllyaTheHath/gentoo-wsl2-kernel "$REPO"
 ```
 
 推荐通过 Gentoo 的 [Portage User Patches](https://wiki.gentoo.org/wiki//etc/portage/patches) 自动应用源码补丁。**先安装补丁，再安装对应版本的源码**：
 
 ```bash
-sudo install -Dm644 \
-  "$REPO/patches/gentoo-sources-7.2.10/0001-wsl-hv-pci-swiotlb.patch" \
-  /etc/portage/patches/sys-kernel/gentoo-sources-7.2.10/0001-wsl-hv-pci-swiotlb.patch
+VERSION="7.3.4"
 
-sudo emerge --oneshot '=sys-kernel/gentoo-sources-7.2.10'
+sudo install -Dm644 \
+  "$REPO/patches/gentoo-sources-${VERSION}/0001-wsl-hv-pci-swiotlb.patch" \
+  /etc/portage/patches/sys-kernel/gentoo-sources-${VERSION}/0001-wsl-hv-pci-swiotlb.patch
+
+sudo env ACCEPT_KEYWORDS="~amd64" emerge --oneshot "=sys-kernel/gentoo-sources-${VERSION}"
 ```
 
 如果源码已通过手工方式修改过，**不要对同一份源码重复应用补丁**。重新安装源码前，请备份现有源码树、配置文件和可启动的旧 `bzImage`。
@@ -59,12 +66,14 @@ sudo emerge --oneshot '=sys-kernel/gentoo-sources-7.2.10'
 ### 2. 配置内核
 
 ```bash
-SRC=/usr/src/linux-7.2.10-gentoo
-BUILD="$HOME/kernel-build/gentoo-7.2.10"
-REPO="$HOME/.config/kernel"
+sudo eselect kernel list
+sudo eselect kernel set [x]
+
+SRC=/usr/src/linux
+BUILD="$HOME/kernel-build/gentoo-${VERSION}"
 
 mkdir -p "$BUILD"
-cp "$REPO/configs/gentoo-7.2.10.config" "$BUILD/.config"
+cp "$REPO/configs/gentoo-${VERSION}.config" "$BUILD/.config"
 make -C "$SRC" O="$BUILD" olddefconfig
 ```
 
@@ -82,7 +91,7 @@ ls -lh "$BUILD/arch/x86/boot/bzImage"
 
 ```bash
 cp "$BUILD/arch/x86/boot/bzImage" \
-  '/mnt/c/Users/<WindowsUser>/.wsl/bzImage-gentoo-7.2.10'
+  "/mnt/c/Users/<WindowsUser>/.wsl/bzImage-gentoo-${VERSION}-swiotlb"
 ```
 
 ## 启用 WSL2 自定义内核
@@ -91,7 +100,7 @@ cp "$BUILD/arch/x86/boot/bzImage" \
 
 ```ini
 [wsl2]
-kernel=C:\\Users\\<WindowsUser>\\.wsl\\bzImage-gentoo-7.2.10
+kernel=C:\\Users\\<WindowsUser>\\.wsl\\bzImage-gentoo-${VERSION}-swiotlb
 loadDefaultKernelModules=false
 guiApplications=false
 # 首次启动排障可开启：
@@ -124,7 +133,7 @@ getent hosts github.com
 验证 SWIOTLB 优化：
 
 ```bash
-dmesg | grep -Ei 'swiotlb|hv_pci'
+dmesg | grep -Ei "swiotlb|hv_pci"
 cat /sys/bus/vmbus/drivers/hv_pci/swiotlb_base
 cat /sys/bus/vmbus/drivers/hv_pci/swiotlb_size
 ```
@@ -150,7 +159,7 @@ wsl --shutdown
 
 ## 补丁来源与版权
 
-SWIOTLB 补丁参考并适配了 [Microsoft WSL2-Linux-Kernel](https://github.com/microsoft/WSL2-Linux-Kernel) 中的 Hyper-V PCI / SWIOTLB 实现，主要参考 `linux-msft-wsl-6.18.54.1`；其目标源码为 **Gentoo Linux 7.2.10**，并非可直接套用的微软原始提交。
+SWIOTLB 补丁参考并适配了 [Microsoft WSL2-Linux-Kernel](https://github.com/microsoft/WSL2-Linux-Kernel) 中的 Hyper-V PCI / SWIOTLB 实现，主要参考 `linux-msft-wsl-6.18.54.1`；其目标源码为 **Gentoo Linux 7.3.4**，并非可直接套用的微软原始提交。
 
 - [微软 Hyper-V PCI 驱动](https://github.com/microsoft/WSL2-Linux-Kernel/blob/linux-msft-wsl-6.18.54.1/drivers/pci/controller/pci-hyperv.c)
 - [微软 SWIOTLB 实现](https://github.com/microsoft/WSL2-Linux-Kernel/blob/linux-msft-wsl-6.18.54.1/kernel/dma/swiotlb.c)
