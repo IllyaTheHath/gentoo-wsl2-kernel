@@ -266,7 +266,7 @@ index 5edea93ec..4918b9b28 100644
  #endif /* CONFIG_DMA_RESTRICTED_POOL */
 +
 +
-+/* WSL dedicated SWIOTLB pool, adapted for Linux 7.2. */
++/* WSL dedicated SWIOTLB pool, adapted for Linux 7.3. */
 +struct io_tlb_mem *swiotlb_create_pool(phys_addr_t base, void *vaddr,
 +                                     size_t size, const char *name)
 +{
@@ -297,7 +297,7 @@ index 5edea93ec..4918b9b28 100644
 +    set_memory_decrypted((unsigned long)vaddr, size >> PAGE_SHIFT);
 +
 +    /*
-+     * Linux 7.2 derives the virtual address from the physical
++     * Linux 7.3 derives the virtual address from the physical
 +     * address; unlike WSL 6.18, it takes only five arguments.
 +     */
 +    swiotlb_init_io_tlb_pool(pool, base, vaddr, nslabs, false, nareas);

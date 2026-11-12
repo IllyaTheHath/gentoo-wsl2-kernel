@@ -36,8 +36,6 @@
 
 `configs/` 存放内核的完整 `.config`；`patches/` 存放对应源码版本的补丁。**补丁版本必须与源码版本匹配**，不能假定旧补丁可无修改地用于新内核。
 
-> 注意：上面的 `configs/` 和 `patches/` 是预期仓库布局。请先将本地已经验证的配置和补丁放入相应位置，再按以下步骤构建。
-
 ## 构建
 
 以下命令在 Gentoo WSL2 内执行，假设仓库位于 `~/.config/kernel`。
@@ -100,7 +98,7 @@ cp "$BUILD/arch/x86/boot/bzImage" \
 
 ```ini
 [wsl2]
-kernel=C:\\Users\\<WindowsUser>\\.wsl\\bzImage-gentoo-${VERSION}-swiotlb
+kernel=C:\\Users\\<WindowsUser>\\.wsl\\bzImage-gentoo-<VERSION>-swiotlb
 loadDefaultKernelModules=false
 guiApplications=false
 # 首次启动排障可开启：
